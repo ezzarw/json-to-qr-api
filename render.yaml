@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: json-to-qr-api
+    runtime: go
+    plan: free
+    region: oregon
+    branch: main
+    autoDeployTrigger: commit
+    buildCommand: go build -o server .
+    startCommand: ./server
+    healthCheckPath: /healthz
