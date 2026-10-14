@@ -75,7 +75,7 @@ func TestComputePayload(t *testing.T) {
 	}
 }
 
-func TestHandleQRJSON(t *testing.T) {
+func TestHandleQRDefaultIsImage(t *testing.T) {
 	req := httptest.NewRequest("GET", "/qr?type=datang&date=2026-10-14", nil)
 	rr := httptest.NewRecorder()
 
@@ -83,6 +83,26 @@ func TestHandleQRJSON(t *testing.T) {
 
 	if rr.Code != http.StatusOK {
 		t.Fatalf("status code got %d, want %d", rr.Code, http.StatusOK)
+	}
+	if rr.Header().Get("Content-Type") != "image/png" {
+		t.Errorf("expected default to be image/png, got %s", rr.Header().Get("Content-Type"))
+	}
+	if rr.Body.Len() == 0 {
+		t.Errorf("expected non-empty image body")
+	}
+}
+
+func TestHandleQRJSON(t *testing.T) {
+	req := httptest.NewRequest("GET", "/qr?type=datang&date=2026-10-14&format=json", nil)
+	rr := httptest.NewRecorder()
+
+	handler.Handler(rr, req)
+
+	if rr.Code != http.StatusOK {
+		t.Fatalf("status code got %d, want %d", rr.Code, http.StatusOK)
+	}
+	if rr.Header().Get("Content-Type") != "application/json" {
+		t.Errorf("expected application/json, got %s", rr.Header().Get("Content-Type"))
 	}
 
 	var resp handler.QRResponse
@@ -97,20 +117,6 @@ func TestHandleQRJSON(t *testing.T) {
 	rawPNG, err := base64.StdEncoding.DecodeString(resp.QRBase64)
 	if err != nil || len(rawPNG) == 0 {
 		t.Errorf("invalid base64 qr payload")
-	}
-}
-
-func TestHandleQRBinary(t *testing.T) {
-	req := httptest.NewRequest("GET", "/qr?type=datang&format=binary", nil)
-	rr := httptest.NewRecorder()
-
-	handler.Handler(rr, req)
-
-	if rr.Code != http.StatusOK {
-		t.Fatalf("status code got %d, want %d", rr.Code, http.StatusOK)
-	}
-	if rr.Header().Get("Content-Type") != "image/png" {
-		t.Errorf("expected image/png, got %s", rr.Header().Get("Content-Type"))
 	}
 }
 
