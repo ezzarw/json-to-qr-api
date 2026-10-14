@@ -100,6 +100,38 @@ func TestHandleQRJSON(t *testing.T) {
 	}
 }
 
+func TestHandleQRBinary(t *testing.T) {
+	req := httptest.NewRequest("GET", "/qr?type=datang&format=binary", nil)
+	rr := httptest.NewRecorder()
+
+	handler.Handler(rr, req)
+
+	if rr.Code != http.StatusOK {
+		t.Fatalf("status code got %d, want %d", rr.Code, http.StatusOK)
+	}
+	if rr.Header().Get("Content-Type") != "image/png" {
+		t.Errorf("expected image/png, got %s", rr.Header().Get("Content-Type"))
+	}
+}
+
+func TestHandleQRBase64(t *testing.T) {
+	req := httptest.NewRequest("GET", "/qr?type=pulang&format=base64", nil)
+	rr := httptest.NewRecorder()
+
+	handler.Handler(rr, req)
+
+	if rr.Code != http.StatusOK {
+		t.Fatalf("status code got %d, want %d", rr.Code, http.StatusOK)
+	}
+	if rr.Header().Get("Content-Type") != "text/plain; charset=utf-8" {
+		t.Errorf("expected text/plain, got %s", rr.Header().Get("Content-Type"))
+	}
+	decoded, err := base64.StdEncoding.DecodeString(rr.Body.String())
+	if err != nil || len(decoded) == 0 {
+		t.Errorf("expected valid base64 body")
+	}
+}
+
 func TestHandleHealth(t *testing.T) {
 	req := httptest.NewRequest("GET", "/api/health", nil)
 	rr := httptest.NewRecorder()

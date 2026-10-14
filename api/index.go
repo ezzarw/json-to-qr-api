@@ -96,20 +96,30 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if q.Get("format") == "image" {
+	format := strings.ToLower(q.Get("format"))
+	if format == "" {
+		format = strings.ToLower(q.Get("output"))
+	}
+
+	switch format {
+	case "binary", "image", "png", "raw":
 		w.Header().Set("Content-Type", "image/png")
 		w.Write(qrBytes)
 		return
+	case "base64", "b64", "text":
+		b64 := base64.StdEncoding.EncodeToString(qrBytes)
+		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+		w.Write([]byte(b64))
+		return
+	default:
+		b64 := base64.StdEncoding.EncodeToString(qrBytes)
+		resp := QRResponse{
+			Payload:   payload,
+			RawJSON:   string(rawBytes),
+			QRBase64:  b64,
+			QRDataURI: "data:image/png;base64," + b64,
+		}
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(resp)
 	}
-
-	b64 := base64.StdEncoding.EncodeToString(qrBytes)
-	resp := QRResponse{
-		Payload:   payload,
-		RawJSON:   string(rawBytes),
-		QRBase64:  b64,
-		QRDataURI: "data:image/png;base64," + b64,
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(resp)
 }
