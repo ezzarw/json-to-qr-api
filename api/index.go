@@ -100,18 +100,18 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 	if format == "" {
 		format = strings.ToLower(q.Get("output"))
 	}
+	isBase64Param := strings.EqualFold(q.Get("base64"), "true") || strings.EqualFold(q.Get("base64"), "1")
 
-	switch format {
-	case "binary", "image", "png", "raw":
-		w.Header().Set("Content-Type", "image/png")
-		w.Write(qrBytes)
-		return
-	case "base64", "b64", "text":
+	// Jika ada parameter base64, kirim text base64
+	if format == "base64" || format == "b64" || format == "text" || isBase64Param {
 		b64 := base64.StdEncoding.EncodeToString(qrBytes)
 		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 		w.Write([]byte(b64))
 		return
-	default:
+	}
+
+	// Jika format=json, kirim json
+	if format == "json" {
 		b64 := base64.StdEncoding.EncodeToString(qrBytes)
 		resp := QRResponse{
 			Payload:   payload,
@@ -121,5 +121,10 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 		}
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(resp)
+		return
 	}
+
+	// Default (tanpa parameter base64/json): langsung binary foto QR PNG
+	w.Header().Set("Content-Type", "image/png")
+	w.Write(qrBytes)
 }

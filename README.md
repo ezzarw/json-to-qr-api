@@ -14,9 +14,9 @@ Query parameters:
 - `type`: `datang` (default) or `pulang`
 - `date`: `YYYY-MM-DD` (optional, defaults to current date in WIB)
 - `format` (atau `output`):
-  - `binary` (atau `image`, `png`, `raw`): return file binary `image/png` langsung
-  - `base64` (atau `b64`, `text`): return string plain text Base64 saja
-  - `json` (default): return JSON lengkap beserta metadata, base64, dan data URI
+  - `(default)`: return file foto binary `image/png` langsung
+  - `base64` (atau `b64`, `text`, atau parameter `base64=true`): return string plain text Base64 saja
+  - `json`: return JSON lengkap beserta metadata, base64, dan data URI
 
 **Example JSON Response:**
 ```json
